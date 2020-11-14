@@ -1,6 +1,7 @@
 <template>
   <q-page class="flex flex-center">
-    <Question :question="questions[index]" @next="next"/>
+    <q-btn v-if="init" no-caps label="Iniciar Atendimento" color="primary" @click="next('welcome')" :loading="loading"></q-btn>
+    <Question :question="question" :method="method" @next="next($event)"/>
   </q-page>
 </template>
 
@@ -16,24 +17,62 @@ export default {
 
   data () {
     return {
-      questions: [
-        { label: 'Seu nome', text: 'Olá, seja bem vindo ao Hello Órama, antes de começar preciso saber seu nome, poderia me informar?' },
-        { label: 'Renda', text: 'Legal, e qual sua renda mínima?' },
-        { label: null, text: 'Obrigado, você será redirecionado para o portal dentro de instantes' }
-      ],
       question: {},
-      index: 0
+      loading: false,
+      method: '',
+      init: true
     }
   },
 
   methods: {
-    next () {
-      this.index += 1
-    }
-  },
+    next (method) {
+      switch (method) {
+        case 'welcome':
+          this.question = {}
+          this.method = method
+          this.welcome()
+          break
+        case 'economizar':
+          this.question = {}
+          this.method = method
+          alert('OK')
+          break
+        default:
+          break
+      }
+    },
 
-  mounted () {
-    this.question = this.questions[this.index]
+    async welcome () {
+      this.loading = true
+      const { data } = await this.$axios.get('http://http://helloorama-form-api.us-east-1.elasticbeanstalk.com//api/register')
+      this.playOutput(data)
+    },
+
+    playOutput (response) {
+      const buf = new Uint8Array(response.buffer.data).buffer
+      const audioContext = new AudioContext()
+      let outputSource
+      try {
+        if (buf.byteLength > 0) {
+          audioContext.decodeAudioData(buf,
+            (buffer) => {
+              audioContext.resume()
+              outputSource = audioContext.createBufferSource()
+              outputSource.connect(audioContext.destination)
+              outputSource.buffer = buffer
+              outputSource.start(0)
+              this.question = { text: response.text }
+              this.init = false
+              this.loading = false
+            },
+            function () {
+              console.log(arguments)
+            })
+        }
+      } catch (e) {
+        console.log(e)
+      }
+    }
   }
 }
 </script>
