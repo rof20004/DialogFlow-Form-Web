@@ -44,7 +44,7 @@ export default {
 
     async welcome () {
       this.loading = true
-      const { data } = await this.$axios.get('http://http://helloorama-form-api.us-east-1.elasticbeanstalk.com//api/register')
+      const { data } = await this.$axios.get('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register')
       this.playOutput(data)
     },
 
