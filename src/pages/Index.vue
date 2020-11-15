@@ -1,12 +1,6 @@
 <template>
   <q-page class="q-pa-xl">
-    <div v-if="init" class="row absolute-center">
-      <div class="col-12">
-        <q-btn no-caps label="Iniciar Atendimento" color="primary" @click="next('welcome')" :loading="loading"></q-btn>
-      </div>
-    </div>
-
-    <div v-else class="row full-width justify-center">
+    <div class="row full-width justify-center">
       <div class="col-12 col-md-6">
         <Chat :conversations="conversations" />
       </div>
@@ -28,7 +22,6 @@
 
 <script>
 /* eslint-disable new-cap */
-
 import Chat from 'components/Chat'
 
 export default {
@@ -200,6 +193,10 @@ export default {
       this.recognition.lang = 'pt-BR'
       this.recognition.start()
     }
+  },
+
+  mounted () {
+    this.next('welcome')
   }
 }
 </script>

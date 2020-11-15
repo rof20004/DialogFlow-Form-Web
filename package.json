@@ -2,7 +2,7 @@
   "name": "helloorama-form-web",
   "version": "0.0.1",
   "description": "Formulário web para cadastro no sistema Hello Órama",
-  "productName": "Hello Órama Form",
+  "productName": "Hello Órama",
   "author": "Rodolfo do Nascimento Azevedo <rof20004@gmail.com>",
   "private": true,
   "scripts": {
