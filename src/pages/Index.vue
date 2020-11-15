@@ -77,9 +77,8 @@ export default {
     },
 
     async welcome () {
-      // http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register
       this.loading = true
-      const { data } = await this.$axios.get('http://localhost:3000/api/register/welcome')
+      const { data } = await this.$axios.get('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register/welcome')
       this.playOutput(data)
     },
 
@@ -94,7 +93,7 @@ export default {
         payload.context = this.context
       }
 
-      const { data } = await this.$axios.post('http://localhost:3000/api/register/conversation', payload)
+      const { data } = await this.$axios.post('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register/conversation', payload)
       this.context = [data.context[0]] || null
       this.playOutput(data)
     },
