@@ -82,7 +82,7 @@ export default {
 
     async welcome () {
       this.loading = true
-      const { data } = await this.$axios.get('https://helloorama-form-api.vercel.app/api/register/welcome')
+      const { data } = await this.$axios.get('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register/welcome')
       this.playOutput(data)
     },
 
@@ -97,7 +97,7 @@ export default {
         payload.context = this.context
       }
 
-      const { data } = await this.$axios.post('https://helloorama-form-api.vercel.app/api/register/conversation', payload)
+      const { data } = await this.$axios.post('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register/conversation', payload)
       this.context = [data.context[0]] || null
       this.playOutput(data)
     },
