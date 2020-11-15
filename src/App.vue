@@ -7,6 +7,12 @@
 export default {
   name: 'App',
 
+  data () {
+    return {
+      isOnline: true
+    }
+  },
+
   methods: {
     notifyOffline () {
       this.$q.notify({
