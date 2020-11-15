@@ -15,7 +15,11 @@
     <q-footer v-show="showInput" class="bg-black text-primary">
       <div class="row full-width text-center">
         <div class="col-12">
-          <q-input ref="input" v-model="text" filled square label="Responda" @keyup.enter="next('conversation')"/>
+          <q-input ref="input" v-model="text" filled square label="Responda" @keyup.enter="next('conversation')">
+            <template v-slot:after>
+              <q-btn round flat icon="mic" color="white" @click="voice" />
+            </template>
+          </q-input>
         </div>
       </div>
     </q-footer>
@@ -23,6 +27,8 @@
 </template>
 
 <script>
+/* eslint-disable new-cap */
+
 import Chat from 'components/Chat'
 
 export default {
@@ -38,7 +44,12 @@ export default {
       loading: false,
       init: true,
       context: null,
-      text: ''
+      text: '',
+      recognition: null,
+      recognizing: false,
+      ignore_onend: false,
+      final_transcript: '',
+      interim_transcript: ''
     }
   },
 
@@ -64,7 +75,7 @@ export default {
           break
         case 'conversation': {
           this.setConversationAnswer()
-          this.setLoadingConversationQuestion({ text: '', loading: true })
+          this.createConversationQuestion({ text: '', loading: true })
           this.conversation(this.text)
           break
         }
@@ -78,7 +89,7 @@ export default {
 
     async welcome () {
       this.loading = true
-      const { data } = await this.$axios.get('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register/welcome')
+      const { data } = await this.$axios.get('https://helloorama-form-api.vercel.app/api/register/welcome')
       this.playOutput(data)
     },
 
@@ -93,7 +104,7 @@ export default {
         payload.context = this.context
       }
 
-      const { data } = await this.$axios.post('http://helloorama-form-api.us-east-1.elasticbeanstalk.com/api/register/conversation', payload)
+      const { data } = await this.$axios.post('https://helloorama-form-api.vercel.app/api/register/conversation', payload)
       this.context = [data.context[0]] || null
       this.playOutput(data)
     },
@@ -113,9 +124,9 @@ export default {
               outputSource.start(0)
 
               if (this.conversations.length === 0) {
-                this.setLoadingConversationQuestion({ text: response.text })
+                this.createConversationQuestion({ text: response.text })
               } else {
-                this.setConversationQuestion({ text: response.text, loading: false })
+                this.updateConversationQuestion({ text: response.text, loading: false })
               }
 
               this.init = false
@@ -130,11 +141,11 @@ export default {
       }
     },
 
-    setLoadingConversationQuestion (question) {
+    createConversationQuestion (question) {
       this.conversations.push({ question })
     },
 
-    setConversationQuestion (question) {
+    updateConversationQuestion (question) {
       const index = this.conversations.length - 1
       const conversation = this.conversations[index]
       conversation.question = question
@@ -146,6 +157,48 @@ export default {
       const conversation = this.conversations[index]
       conversation.answer = { text: this.text }
       this.$set(this.conversations, index, conversation)
+    },
+
+    voice () {
+      this.text = ''
+      this.final_transcript = ''
+
+      this.recognition = new window.webkitSpeechRecognition()
+
+      this.recognition.onstart = () => {
+        this.recognizing = true
+        console.log('Reconhecendo')
+      }
+
+      this.recognition.onerror = event => {
+        if (event.error === 'no-speech') {
+          this.ignore_onend = true
+        }
+        if (event.error === 'audio-capture') {
+          this.ignore_onend = true
+        }
+        if (event.error === 'not-allowed') {
+          this.ignore_onend = true
+        }
+      }
+
+      this.recognition.onend = () => {
+        this.recognizing = false
+      }
+
+      this.recognition.onresult = event => {
+        for (var i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            this.final_transcript += event.results[i][0].transcript
+          }
+        }
+
+        this.text = this.final_transcript
+        this.next('conversation')
+      }
+
+      this.recognition.lang = 'pt-BR'
+      this.recognition.start()
     }
   }
 }
